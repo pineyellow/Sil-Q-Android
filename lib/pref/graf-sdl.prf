@@ -1,0 +1,15 @@
+# File: graf-sdl.prf
+
+#
+# This file defines attr/char mappings for the SDL graphics backend.
+#
+# See `src/files.c` for more information.
+#
+
+###############################################################################
+# Load the preferences for tiles graphics (if enabled)
+###############################################################################
+?:[EQU $GRAF tiles]
+%:graf-tiles.prf
+
+?:1

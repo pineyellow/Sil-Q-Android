@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Match the opaque background of icon.png to hide the inset boundary. -->
+    <color name="app_icon_background">#2B2B2B</color>
+</resources>

@@ -1,0 +1,31 @@
+*.o
+# Ignore any generated macOS .dmg files (from Makefile.cocoa's dist target)
+*.dmg
+*.raw
+# Ignore locally built `sil` binary.
+sil
+sil.exe
+sil.ini
+src/sil
+src/sil.o.arm64
+src/sil.o.x86_64
+/Sil.app
+# Same as `src/sil`
+/sil
+.DS_Store
+/VERSION.txt
+# cmake build output
+/build/
+/.cache/
+/android/.gradle/
+/android/build/
+/android/local.properties
+/android/vendor/
+/android/app/build/
+/android/app/.cxx/
+/android/.idea/
+/android/app/release/
+/.idea/
+/tools/
+/releases/
+/android/dev/

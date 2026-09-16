@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 7 fallback, using the same source artwork as the adaptive icon. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/icon"
+    android:gravity="fill"
+    android:filter="false" />

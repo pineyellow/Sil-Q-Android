@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Apply an 18% inset: adaptive launchers enlarge and mask this layer.
+     Use the original nodpi PNG so density scaling does not compound the zoom. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="18%">
+    <bitmap android:src="@drawable/icon"
+        android:gravity="fill"
+        android:filter="false" />
+</inset>
