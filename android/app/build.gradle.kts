@@ -29,8 +29,8 @@ android {
         applicationId = "com.pineyellow.silq"
         minSdk = 24
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.5.1b2.8"
+        versionCode = 9
+        versionName = "1.5.1b2.9"
         resValue("string", "app_name", "Sil-Q")
         ndk { abiFilters += listOf("x86_64", "arm64-v8a", "armeabi-v7a") }
     }
