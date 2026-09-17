@@ -91,7 +91,7 @@ final class DPadOverlay {
         grid.setOrientation(LinearLayout.VERTICAL);
         grid.setClipChildren(false);
         grid.setClipToPadding(false);
-        // Child cells handle DPAD presses. The clickable padded area around
+        // Child cells handle D-pad presses. The clickable padded area around
         // them consumes near-misses so they cannot become dungeon-map taps.
         grid.setClickable(true);
         grid.setOnClickListener(v -> { });
