@@ -626,6 +626,15 @@ public class SilActivity extends SDLActivity {
         runOnUiThread(() -> GameSettings.setFloat(this, "camera_zoom", zoom));
     }
 
+    static final String PREF_MORE_MODE = "more_mode";
+    native void nativeSetMoreMode(int mode);
+
+    int moreMode() {
+        return Math.max(0, Math.min(2, Math.round(GameSettings.getFloat(this, PREF_MORE_MODE, 0f))));
+    }
+
+    void applyMoreMode() { nativeSetMoreMode(moreMode()); }
+
     @Override protected String[] getLibraries() {
         return new String[] { "SDL2", "silq" };
     }
@@ -647,6 +656,7 @@ public class SilActivity extends SDLActivity {
         GameSettings.setBool(this, GameSettings.PREF_TILES, true);
         nativeSetGraphicsTiles(true);
         applyCameraSettings();
+        applyMoreMode();
     }
 
     private void copyAssets(String path) throws IOException {

@@ -2753,11 +2753,13 @@ static void msg_flush(int x)
     if (hilite_target && target_sighted())
         move_cursor_relative(p_ptr->target_row, p_ptr->target_col);
 
-    if (!auto_more
 #if defined(__ANDROID__) && defined(USE_SDL)
-        && !android_save_interrupt()
+    /* App preference is authoritative, including after loading engine options. */
+    extern bool android_message_wait(void);
+    if (android_message_wait())
+#else
+    if (!auto_more)
 #endif
-        )
     {
         /* Get an acceptable keypress */
         while (1)

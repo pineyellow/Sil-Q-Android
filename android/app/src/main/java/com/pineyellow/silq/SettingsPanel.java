@@ -116,6 +116,17 @@ final class SettingsPanel {
                 "DPAD button width multiplier\n(1 = square buttons)",
                 activity::applyDpadSettings, true);
         }
+        LinearLayout moreRow = addRow(panel, "Skip -more- prompts");
+        String[] moreModes = {"Off", "Fast", "Instant"};
+        TextView moreValue = makeValueIndicator(moreModes[activity.moreMode()]);
+        moreRow.addView(moreValue);
+        moreRow.setOnClickListener(v -> {
+            int mode = (activity.moreMode() + 1) % moreModes.length;
+            GameSettings.setFloat(activity, SilActivity.PREF_MORE_MODE, mode);
+            moreValue.setText(moreModes[mode]);
+            activity.applyMoreMode();
+        });
+
         int panelWidth = Math.min(activity.dpToPx(280),
             (int)(activity.getResources().getDisplayMetrics().widthPixels * 0.6f));
 

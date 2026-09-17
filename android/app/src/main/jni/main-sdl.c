@@ -105,6 +105,37 @@ bool android_debug_tutorial_enabled(void)
 }
 #endif
 static bool more_active;
+static SDL_atomic_t more_mode;
+static bool more_timed;
+static Uint32 more_deadline;
+
+JNIEXPORT void JNICALL
+Java_com_pineyellow_silq_SilActivity_nativeSetMoreMode(JNIEnv* env, jobject self, jint mode)
+{
+    (void)env; (void)self;
+    SDL_AtomicSet(&more_mode, SDL_clamp(mode, 0, 2));
+    wake_renderer();
+}
+
+/* Only an active message wait can expire; no key enters the command queue. */
+bool android_message_timeout(void)
+{
+    int mode = SDL_AtomicGet(&more_mode);
+    return more_active && (mode == 2
+        || (mode == 1 && more_timed && (Sint32)(SDL_GetTicks() - more_deadline) >= 0));
+}
+
+bool android_message_wait(void)
+{
+    android_save_poll();
+    if (android_save_interrupt() || SDL_AtomicGet(&more_mode) == 2) return FALSE;
+    /* Start the reading interval only after the complete message is presented. */
+    Term_fresh();
+    more_timed = SDL_AtomicGet(&more_mode) == 1;
+    more_deadline = SDL_GetTicks() + 500;
+    return TRUE;
+}
+
 static bool pointer_down;
 static bool pointer_menu;
 static int pointer_x, pointer_y, pointer_travel;
@@ -723,6 +754,7 @@ void android_message_pause(bool active)
         if (!note_active) settle_camera_before_pause();
     }
     more_active = active;
+    more_timed = FALSE;
     SDL_AtomicAdd(&dpad_context, 1);
     SDL_AtomicAdd(&dpad_press_token, 1);
     pointer_down = FALSE;
@@ -1156,6 +1188,10 @@ static void pump_events(bool wait, bool discard_input)
     bool can_draw = !discard_input && presentation_ready();
     int timeout = can_draw && camera_follow_moving() ? 16 : 250;
     if (can_draw && (frame_dirty || view_changed())) timeout = 0;
+    if (more_active && more_timed && !discard_input) {
+        Sint32 remaining = (Sint32)(more_deadline - SDL_GetTicks());
+        timeout = SDL_min(timeout, SDL_max(0, remaining));
+    }
     if (pointer_down && pointer_swipe_key) {
         Sint32 remaining = (Sint32)(pointer_repeat_at - SDL_GetTicks());
         timeout = SDL_min(timeout, SDL_max(0, remaining));

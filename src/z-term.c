@@ -1939,6 +1939,8 @@ errr Term_inkey(char* ch, bool wait, bool take)
              * Message waits treat this as interruption, choices as cancellation. */
             extern bool android_save_interrupt(void);
             if (android_save_interrupt()) { *ch = 27; return 0; }
+            extern bool android_message_timeout(void);
+            if (android_message_timeout()) { *ch = ' '; return 0; }
 #endif
             /* Process events (wait for one) */
             Term_xtra(TERM_XTRA_EVENT, TRUE);
