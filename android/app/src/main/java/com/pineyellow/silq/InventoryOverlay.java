@@ -100,6 +100,11 @@ final class InventoryOverlay {
 
     View button() { return button; }
     private boolean aiming, blocked, messagePause, commandAvailable;
+    private boolean opacityPreview;
+    void setOpacityPreview(boolean preview) {
+        opacityPreview = preview;
+        updateButtonEnabled();
+    }
     void setBlocked(boolean value) { blocked = value; updateButtonEnabled(); }
     void setMessagePause(boolean value) { messagePause = value; updateButtonEnabled(); }
     void setCommandAvailable(boolean value) { commandAvailable = value; updateButtonEnabled(); }
@@ -107,7 +112,7 @@ final class InventoryOverlay {
         boolean enabled = commandAvailable && !aiming && !blocked && !messagePause && request == 0;
         button.setEnabled(enabled);
         button.setClickable(enabled);
-        button.setAlpha(enabled ? 1f : .35f);
+        button.setAlpha(opacityPreview || enabled ? 1f : .35f);
     }
     void available(boolean available) { button.setVisibility(available ? View.VISIBLE : View.GONE); }
     void setAiming(boolean active) {

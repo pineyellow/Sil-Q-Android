@@ -25,6 +25,12 @@ final class FireControls {
     private boolean canAimVertical;
     private int state, epoch;
     private boolean blocked, paused;
+    private boolean opacityPreview;
+
+    void setOpacityPreview(boolean preview) {
+        opacityPreview = preview;
+        render();
+    }
     private boolean stealthActive;
     private boolean singing;
     private boolean hasSongs, hasBow;
@@ -132,6 +138,15 @@ final class FireControls {
         host.addView(result, lp);
     }
 
+    void applyButtonOpacity(float opacity) {
+        for (View button : new View[]{fire, cancel, interact, stealth, sing,
+                hornUp, hornDown, quiver}) {
+            ButtonOpacity.apply(button, Palette.ACTION_BUTTON_BG, opacity);
+        }
+        ButtonOpacity.apply(ground, Palette.TOGGLE_ACTIVE, opacity,
+            Palette.EQUIPPED_BORDER, activity.dpToPx(1));
+    }
+
     void update(int state, int epoch, boolean stealthActive, boolean singing,
                 int selectedQuiver, boolean canSwitchQuiver, boolean canAimVertical,
                 boolean hasSongs, boolean hasBow) {
@@ -195,7 +210,7 @@ final class FireControls {
         boolean enabled = hasBow && !blocked && !paused && (state == 2 || state == 3);
         fire.setVisibility(state == 0 || !hasBow ? View.GONE : View.VISIBLE);
         fire.setEnabled(enabled);
-        fire.setAlpha(enabled ? 1f : .35f);
+        fire.setAlpha(opacityPreview || enabled ? 1f : .35f);
         fire.setContentDescription("Fire");
         cancel.setContentDescription(state == 7 ? "Cancel horn" : state == 5 ? "Cancel interaction" : state == 4 ? "Cancel throw" : "Cancel shot");
         fire.setColorFilter(state == 3 ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
@@ -212,14 +227,14 @@ final class FireControls {
         stealth.setEnabled(canInteract);
         sing.setVisibility(state == 0 || !hasSongs ? View.GONE : View.VISIBLE);
         sing.setEnabled(canInteract && hasSongs);
-        sing.setAlpha(canInteract ? 1f : .35f);
+        sing.setAlpha(opacityPreview || canInteract ? 1f : .35f);
         sing.setColorFilter(singing ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
         sing.setContentDescription(singing ? "Change song (singing)" : "Sing");
-        stealth.setAlpha(canInteract ? 1f : .35f);
+        stealth.setAlpha(opacityPreview || canInteract ? 1f : .35f);
         stealth.setSelected(stealthActive);
         stealth.setColorFilter(stealthActive ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
         stealth.setContentDescription(stealthActive ? "Disable stealth (on)" : "Enable stealth (off)");
-        interact.setAlpha(canInteract || state == 5 ? 1f : .35f);
+        interact.setAlpha(opacityPreview || canInteract || state == 5 ? 1f : .35f);
         interact.setColorFilter(state == 5 ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
         cancel.setVisibility(aiming() && state != 5 && !paused ? View.VISIBLE : View.GONE);
         cancel.setEnabled(!blocked && !paused);
@@ -228,6 +243,6 @@ final class FireControls {
         quiver.setVisibility(state == 3 && !paused && canSwitchQuiver ? View.VISIBLE : View.GONE);
         boolean canSwitch = !blocked && !paused && state == 3 && canSwitchQuiver;
         quiver.setEnabled(canSwitch);
-        quiver.setAlpha(canSwitch ? 1f : .35f);
+        quiver.setAlpha(opacityPreview || canSwitch ? 1f : .35f);
     }
 }

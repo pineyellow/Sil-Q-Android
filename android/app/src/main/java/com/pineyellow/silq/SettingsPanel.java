@@ -84,6 +84,10 @@ final class SettingsPanel {
         }
 
         // Control preferences take effect immediately and survive app restarts.
+        addStepperSetting(panel, "Button Opacity", ButtonOpacity.PREF,
+            ButtonOpacity.DEFAULT, 0f, 1f, 0.05f,
+            "Button Opacity (Default: " + formatFloat(ButtonOpacity.DEFAULT) + ")",
+            activity::applyButtonOpacity, true);
         boolean dpadEnabled = GameSettings.getBool(activity, DPadOverlay.PREF_ENABLED, true);
         addAppToggle(panel, "Enable DPAD", DPadOverlay.PREF_ENABLED, true,
             enabled -> {
@@ -214,6 +218,8 @@ final class SettingsPanel {
 
         row.setOnClickListener(v -> {
             float originalValue = GameSettings.getFloat(activity, prefKey, defaultValue);
+            boolean opacityPreview = ButtonOpacity.PREF.equals(prefKey);
+            if (opacityPreview) activity.setButtonOpacityPreview(true);
             if (hideSettingsWhileAdjusting) {
                 host.setVisibility(View.GONE);
                 host.removeAllViews();
@@ -226,6 +232,7 @@ final class SettingsPanel {
                     if (onChange != null) onChange.run();
                 },
                 result -> {
+                    if (opacityPreview) activity.setButtonOpacityPreview(false);
                     float finalValue = result != null ? result : originalValue;
                     GameSettings.setFloat(activity, prefKey, finalValue);
                     valueView.setText(formatFloat(finalValue));

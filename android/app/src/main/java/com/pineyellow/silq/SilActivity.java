@@ -139,6 +139,7 @@ public class SilActivity extends SDLActivity {
         inventoryButton.setMargins(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8));
         gameOverlay.addView(inventoryOverlay.button(), inventoryButton);
         fireControls = new FireControls(this, gameOverlay);
+        applyButtonOpacity();
         addContentView(inventoryHost, new FrameLayout.LayoutParams(-1, -1));
         dpadHost.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             if (r - l != or - ol || b - t != ob - ot) {
@@ -149,6 +150,21 @@ public class SilActivity extends SDLActivity {
         });
         findViewById(android.R.id.content).requestApplyInsets();
         updateDpadVisibility();
+    }
+
+    void applyButtonOpacity() {
+        float opacity = ButtonOpacity.read(this);
+        if (fireControls != null) fireControls.applyButtonOpacity(opacity);
+        if (menuOverlay != null) menuOverlay.applyButtonOpacity(opacity);
+        if (inventoryOverlay != null) {
+            ButtonOpacity.apply(inventoryOverlay.button(), Palette.ACTION_BUTTON_BG, opacity);
+        }
+    }
+
+    void setButtonOpacityPreview(boolean preview) {
+        if (fireControls != null) fireControls.setOpacityPreview(preview);
+        if (menuOverlay != null) menuOverlay.setOpacityPreview(preview);
+        if (inventoryOverlay != null) inventoryOverlay.setOpacityPreview(preview);
     }
 
     private void installCutoutSafeArea() {

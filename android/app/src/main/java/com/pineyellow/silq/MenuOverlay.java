@@ -29,6 +29,14 @@ final class MenuOverlay {
     private final View abilitiesItem;
     private final View saveQuitItem;
     private boolean expanded;
+    private boolean opacityPreview;
+
+    void setOpacityPreview(boolean preview) {
+        opacityPreview = preview;
+        updateButtonEnabled();
+    }
+    private float buttonOpacity = ButtonOpacity.DEFAULT;
+    private ValueAnimator toggleAnimator;
     private boolean dungeonAvailable, characterScreenOpen;
     private boolean inventoryOpen, aiming;
 
@@ -139,9 +147,9 @@ final class MenuOverlay {
         updateButtonEnabled();
     }
     private void updateButtonEnabled() {
-        boolean enabled = !inventoryOpen && !aiming && !messagePause;
+        boolean enabled = !inventoryOpen && !aiming && !messagePause && !opacityPreview;
         menuBtn.setEnabled(enabled);
-        menuBtn.setAlpha(enabled ? 1f : .35f);
+        menuBtn.setAlpha(opacityPreview || enabled ? 1f : .35f);
     }
     private int dp(float value) { return activity.dpToPx(value); }
 
@@ -169,18 +177,31 @@ final class MenuOverlay {
         animateToggle(menuBtn, true);
     }
 
+    void applyButtonOpacity(float opacity) {
+        buttonOpacity = opacity;
+        if (toggleAnimator != null) toggleAnimator.cancel();
+        ButtonOpacity.apply(menuBtn,
+            expanded ? Palette.TOGGLE_ACTIVE : Palette.ACTION_BUTTON_BG, opacity,
+            expanded ? Palette.BUTTON_BORDER_ACTIVE : Palette.BUTTON_BORDER, 1);
+    }
+
     private void animateToggle(View v, boolean active) {
         GradientDrawable bg = extractBackground(v);
         if (bg == null) return;
 
-        int from = active ? Palette.ACTION_BUTTON_BG : Palette.TOGGLE_ACTIVE;
-        int to   = active ? Palette.TOGGLE_ACTIVE : Palette.ACTION_BUTTON_BG;
+        if (toggleAnimator != null) toggleAnimator.cancel();
+        int from = ButtonOpacity.fillColor(
+            active ? Palette.ACTION_BUTTON_BG : Palette.TOGGLE_ACTIVE, buttonOpacity);
+        int to = ButtonOpacity.fillColor(
+            active ? Palette.TOGGLE_ACTIVE : Palette.ACTION_BUTTON_BG, buttonOpacity);
         ValueAnimator anim = ValueAnimator.ofObject(new ArgbEvaluator(), from, to);
+        toggleAnimator = anim;
         anim.setDuration(150);
         anim.addUpdateListener(a -> bg.setColor((int) a.getAnimatedValue()));
         anim.start();
 
-        bg.setStroke(1, active ? Palette.BUTTON_BORDER_ACTIVE : Palette.BUTTON_BORDER);
+        bg.setStroke(1, ButtonOpacity.borderColor(
+            active ? Palette.BUTTON_BORDER_ACTIVE : Palette.BUTTON_BORDER, buttonOpacity));
 
         if (v instanceof ImageButton) {
             ((ImageButton) v).setColorFilter(active

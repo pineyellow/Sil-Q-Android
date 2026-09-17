@@ -19,7 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.text.DecimalFormat;
 
-/** Live D-pad adjustment dialog. */
+/** Live control adjustment dialog. */
 final class StepperDialog {
     private static final long STEPPER_REPEAT_DELAY_MS = 500;
     private static final long STEPPER_REPEAT_INTERVAL_MS = 10;
