@@ -95,6 +95,10 @@ final class SettingsPanel {
                 show();
             });
         if (dpadEnabled) {
+            addStepperSetting(panel, "DPAD Opacity", DPadOverlay.PREF_OPACITY,
+                DPadOverlay.DEFAULT_OPACITY, 0f, 1f, 0.05f,
+                "DPAD Opacity (Default: " + formatFloat(DPadOverlay.DEFAULT_OPACITY) + ")",
+                activity::applyDpadSettings, true);
             addStepperSetting(panel, "DPAD X", DPadOverlay.PREF_OFFSET_X,
                 10f, null, null, 1f,
                 "DPAD X position offset in dp\n(- goes left, + goes right)",

@@ -26,6 +26,8 @@ final class DPadOverlay {
     static final String PREF_OFFSET_Y = "dpad_position_y";
     static final String PREF_SIZE = "dpad_size";
     static final String PREF_BUTTON_WIDTH = "dpad_button_width";
+    static final String PREF_OPACITY = "dpad_opacity";
+    static final float DEFAULT_OPACITY = 0.35f;
 
     static final float DEFAULT_SIZE = 1f;
     static final float DEFAULT_BUTTON_WIDTH = 1f;
@@ -68,6 +70,20 @@ final class DPadOverlay {
 
     View getView() {
         return root;
+    }
+
+    void setOpacity(float opacity) {
+        // Scale both original alphas together, including at the upper limit.
+        float scale = Math.min(255f / Color.alpha(GLYPH_COLOR),
+            Math.max(0f, Math.min(1f, opacity)) / DEFAULT_OPACITY);
+        int iconAlpha = Math.round(Color.alpha(GLYPH_COLOR) * scale);
+        int borderAlpha = Math.round(Color.alpha(GRID_LINE_COLOR) * scale);
+        for (ScaledIconView[] row : cells) {
+            for (ScaledIconView cell : row) {
+                cell.setImageAlpha(iconAlpha);
+                cell.border.setAlpha(borderAlpha);
+            }
+        }
     }
 
     private DrawLastLinearLayout build() {

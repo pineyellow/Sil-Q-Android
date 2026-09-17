@@ -339,6 +339,10 @@ public class SilActivity extends SDLActivity {
     }
 
     void applyDpadSettings() {
+        if (dpadOverlay != null) {
+            dpadOverlay.setOpacity(GameSettings.getFloat(
+                this, DPadOverlay.PREF_OPACITY, DPadOverlay.DEFAULT_OPACITY));
+        }
         if (dpadView == null || dpadHost == null) return;
         if (dpadHost.getVisibility() != View.VISIBLE
                 || dpadHost.getWidth() == 0 || dpadHost.getHeight() == 0) {
