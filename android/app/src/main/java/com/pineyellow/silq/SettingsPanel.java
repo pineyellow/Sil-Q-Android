@@ -29,6 +29,7 @@ final class SettingsPanel {
     }
 
     void show() {
+        activity.applyDpadSettings(); // Migrate legacy position before reading the indicator.
         activity.cancelDpadInput();
         activity.setOverlayInputBlocked(true);
         host.removeAllViews();
@@ -91,11 +92,11 @@ final class SettingsPanel {
             });
         if (dpadEnabled) {
             addStepperSetting(panel, "DPAD X", DPadOverlay.PREF_OFFSET_X,
-                1f, null, null, 1f,
+                10f, null, null, 1f,
                 "DPAD X position offset in dp\n(- goes left, + goes right)",
                 activity::applyDpadSettings, true);
             addStepperSetting(panel, "DPAD Y", DPadOverlay.PREF_OFFSET_Y,
-                0f, null, null, 1f,
+                DPadOverlay.MARGIN_DP, null, null, 1f,
                 "DPAD Y position offset in dp\n(- goes down, + goes up)",
                 activity::applyDpadSettings, true);
             addStepperSetting(panel, "DPAD Size", DPadOverlay.PREF_SIZE,

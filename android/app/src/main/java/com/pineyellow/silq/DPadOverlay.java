@@ -23,7 +23,7 @@ final class DPadOverlay {
 
     static final String PREF_ENABLED = "enable_dpad";
     static final String PREF_OFFSET_X = "dpad_offset_x";
-    static final String PREF_OFFSET_Y = "dpad_offset_y";
+    static final String PREF_OFFSET_Y = "dpad_position_y";
     static final String PREF_SIZE = "dpad_size";
     static final String PREF_BUTTON_WIDTH = "dpad_button_width";
 

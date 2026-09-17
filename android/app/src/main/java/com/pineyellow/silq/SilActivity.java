@@ -25,6 +25,7 @@ import java.nio.ByteOrder;
 public class SilActivity extends SDLActivity {
     static final int EDGE_SAFE_DP = 4;
     private FrameLayout gameOverlay;
+    private FrameLayout dpadHost;
     private FrameLayout settingsHost;
     private DPadOverlay dpadOverlay;
     private View dpadView;
@@ -94,6 +95,9 @@ public class SilActivity extends SDLActivity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         installCutoutSafeArea();
+        dpadHost = new FrameLayout(this);
+        dpadHost.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        addContentView(dpadHost, new FrameLayout.LayoutParams(-1, -1));
         // SDL keeps ownership of the surface. Empty overlay space passes through.
         gameOverlay = new FrameLayout(this);
         gameOverlay.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
@@ -108,7 +112,7 @@ public class SilActivity extends SDLActivity {
         dpadOverlay = new DPadOverlay(this, menuOverlay::collapseSubmenu);
         dpadView = dpadOverlay.getView();
         dpadView.setVisibility(View.GONE);
-        gameOverlay.addView(dpadView, new FrameLayout.LayoutParams(
+        dpadHost.addView(dpadView, new FrameLayout.LayoutParams(
             dpToPx(DPadOverlay.SIZE_DP), dpToPx(DPadOverlay.SIZE_DP),
             Gravity.TOP | Gravity.LEFT));
         // Menu always stays reachable, including when the D-pad overlaps it.
@@ -136,23 +140,28 @@ public class SilActivity extends SDLActivity {
         gameOverlay.addView(inventoryOverlay.button(), inventoryButton);
         fireControls = new FireControls(this, gameOverlay);
         addContentView(inventoryHost, new FrameLayout.LayoutParams(-1, -1));
-        gameOverlay.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+        dpadHost.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             if (r - l != or - ol || b - t != ob - ot) {
                 // Wait until this layout pass finishes, using the latest bounds.
                 v.removeCallbacks(updateDpadLayout);
                 v.post(updateDpadLayout);
             }
         });
+        findViewById(android.R.id.content).requestApplyInsets();
         updateDpadVisibility();
     }
 
     private void installCutoutSafeArea() {
-        // Resize SDL's surface and every Activity overlay together. SDL receives
-        // the new surface size and keeps rendering and touch coordinates aligned.
+        // Keep the window full size for the D-pad. Inset SDL and the other
+        // overlays individually so rendering and map touches remain aligned.
         FrameLayout content = findViewById(android.R.id.content);
         content.setBackgroundColor(Color.BLACK);
         getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.BLACK));
         if (android.os.Build.VERSION.SDK_INT < 28) return;
+        WindowManager.LayoutParams windowParams = getWindow().getAttributes();
+        windowParams.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        getWindow().setAttributes(windowParams);
         content.setOnApplyWindowInsetsListener((view, insets) -> {
             applyCutoutSafeArea(content, insets);
             // Inventory still needs the keyboard insets and already accounts for
@@ -184,10 +193,16 @@ public class SilActivity extends SDLActivity {
             bottom = Math.max(0, cutout.getSafeInsetBottom()
                 - (decor.getHeight() - y - content.getHeight()));
         }
-        if (left != content.getPaddingLeft() || top != content.getPaddingTop()
-                || right != content.getPaddingRight() || bottom != content.getPaddingBottom()) {
-            cancelDpadInput();
-            content.setPadding(left, top, right, bottom);
+        for (int i = 0; i < content.getChildCount(); i++) {
+            View child = content.getChildAt(i);
+            if (child == dpadHost) continue;
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) child.getLayoutParams();
+            if (params.leftMargin != left || params.topMargin != top
+                    || params.rightMargin != right || params.bottomMargin != bottom) {
+                cancelDpadInput();
+                params.setMargins(left, top, right, bottom);
+                child.setLayoutParams(params);
+            }
         }
     }
 
@@ -308,9 +323,9 @@ public class SilActivity extends SDLActivity {
     }
 
     void applyDpadSettings() {
-        if (dpadView == null || gameOverlay == null) return;
-        if (gameOverlay.getVisibility() != View.VISIBLE
-                || gameOverlay.getWidth() == 0 || gameOverlay.getHeight() == 0) {
+        if (dpadView == null || dpadHost == null) return;
+        if (dpadHost.getVisibility() != View.VISIBLE
+                || dpadHost.getWidth() == 0 || dpadHost.getHeight() == 0) {
             return;
         }
 
@@ -334,8 +349,8 @@ public class SilActivity extends SDLActivity {
         int gridWidthPx = dpToPx(DPadOverlay.SIZE_DP * sizeScale * buttonWidthScale);
         int gridHeightPx = dpToPx(DPadOverlay.SIZE_DP * sizeScale);
         // Keep every direction reachable even at the largest scale on a small display.
-        float fit = Math.min(1f, Math.min((float) gameOverlay.getWidth() / gridWidthPx,
-            (float) gameOverlay.getHeight() / gridHeightPx));
+        float fit = Math.min(1f, Math.min((float) dpadHost.getWidth() / gridWidthPx,
+            (float) dpadHost.getHeight() / gridHeightPx));
         gridWidthPx = Math.max(3, Math.round(gridWidthPx * fit));
         gridHeightPx = Math.max(3, Math.round(gridHeightPx * fit));
         int deadZonePx = dpToPx(DPadOverlay.deadZoneDp(sizeScale));
@@ -344,12 +359,18 @@ public class SilActivity extends SDLActivity {
         dpadOverlay.setDeadZoneSize(deadZonePx);
 
         float defaultAnchorXPx = dpToPx(DPadOverlay.SIZE_DP / 2f);
-        float defaultAnchorYPx = gameOverlay.getHeight()
-            - dpToPx(DPadOverlay.MARGIN_DP + DPadOverlay.SIZE_DP / 2f);
         float anchorXPx = defaultAnchorXPx
-            + dpToPx(GameSettings.getFloat(this, DPadOverlay.PREF_OFFSET_X, 1f));
-        float anchorYPx = defaultAnchorYPx
-            - dpToPx(GameSettings.getFloat(this, DPadOverlay.PREF_OFFSET_Y, 0f));
+            + dpToPx(GameSettings.getFloat(this, DPadOverlay.PREF_OFFSET_X, 10f));
+        float offsetY = GameSettings.getFloat(this, DPadOverlay.PREF_OFFSET_Y, Float.NaN);
+        if (!Float.isFinite(offsetY)) {
+            // Original offsets hid the default 12 dp in the anchor.
+            offsetY = DPadOverlay.MARGIN_DP
+                + GameSettings.getFloat(this, "dpad_offset_y", 0f);
+            offsetY = Math.round(offsetY);
+            GameSettings.setFloat(this, DPadOverlay.PREF_OFFSET_Y, offsetY);
+        }
+        float anchorYPx = dpadHost.getHeight() - dpToPx(DPadOverlay.SIZE_DP / 2f)
+            - dpToPx(offsetY);
 
         // Clamp the visible grid exactly as before, then place the guard
         // around it. Any guard extending beyond a screen edge is harmlessly
@@ -357,9 +378,9 @@ public class SilActivity extends SDLActivity {
         int gridLeft = Math.round(anchorXPx - gridWidthPx / 2f);
         int gridTop = Math.round(anchorYPx - gridHeightPx / 2f);
         gridLeft = Math.max(0,
-            Math.min(gameOverlay.getWidth() - gridWidthPx, gridLeft));
+            Math.min(dpadHost.getWidth() - gridWidthPx, gridLeft));
         gridTop = Math.max(0,
-            Math.min(gameOverlay.getHeight() - gridHeightPx, gridTop));
+            Math.min(dpadHost.getHeight() - gridHeightPx, gridTop));
         int left = gridLeft - deadZonePx;
         int top = gridTop - deadZonePx;
 
