@@ -126,6 +126,8 @@ final class SettingsPanel {
             moreValue.setText(moreModes[mode]);
             activity.applyMoreMode();
         });
+        addAppToggle(panel, "Show \"Auto-move\" button", FireControls.PREF_AUTO_MOVE, false,
+            activity::setAutoMoveVisible);
 
         int panelWidth = Math.min(activity.dpToPx(280),
             (int)(activity.getResources().getDisplayMetrics().widthPixels * 0.6f));

@@ -161,6 +161,10 @@ public class SilActivity extends SDLActivity {
         }
     }
 
+    void setAutoMoveVisible(boolean visible) {
+        if (fireControls != null) fireControls.setAutoMoveVisible(visible);
+    }
+
     void setButtonOpacityPreview(boolean preview) {
         if (fireControls != null) fireControls.setOpacityPreview(preview);
         if (menuOverlay != null) menuOverlay.setOpacityPreview(preview);

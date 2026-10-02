@@ -5109,7 +5109,7 @@ bool get_rep_dir(int* dp)
         if (p_ptr->command_cmd == '/')
             p = "Interact where? (Tap Interact again to cancel)";
         else if (p_ptr->command_cmd == '.')
-            p = "Run where? (Tap Run again to cancel)";
+            p = "Move where? (Tap Auto-move again to cancel)";
         else
             p = "Direction (Escape to cancel)? ";
 #else

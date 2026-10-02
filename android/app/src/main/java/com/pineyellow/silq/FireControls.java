@@ -34,10 +34,19 @@ final class FireControls {
     private boolean stealthActive;
     private boolean singing;
     private boolean hasSongs, hasBow;
+    /** The game's run command; called Auto-move because it is no faster than walking. */
+    static final String PREF_AUTO_MOVE = "show_auto_move";
+    private boolean showRun;
+
+    void setAutoMoveVisible(boolean visible) {
+        showRun = visible;
+        render();
+    }
 
     FireControls(SilActivity activity, FrameLayout host) {
         this.activity = activity;
-        fire = button(host, R.drawable.ic_bow, "Fire", 176, 8);
+        showRun = GameSettings.getBool(activity, PREF_AUTO_MOVE, false);
+        fire =button(host, R.drawable.ic_bow, "Fire", 176, 8);
         interact = button(host, R.drawable.ic_interact, "Interact", 64, 8);
         stealth = button(host, R.drawable.ic_stealth, "Enable stealth", 120, 8);
         sing = button(host, R.drawable.ic_music_note, "Sing", 232, 8);
@@ -45,7 +54,7 @@ final class FireControls {
             activity.prepareFireInput();
             activity.nativeSingInput(epoch);
         });
-        run = button(host, R.drawable.ic_run, "Run", 288, 8);
+        run = button(host, R.drawable.ic_run, "Auto-move", 288, 8);
         run.setOnClickListener(v -> {
             activity.prepareFireInput();
             if (state == 9) cancel();
@@ -246,9 +255,9 @@ final class FireControls {
         stealth.setContentDescription(stealthActive ? "Disable stealth (on)" : "Enable stealth (off)");
         interact.setAlpha(opacityPreview || canInteract || state == 5 ? 1f : .35f);
         interact.setColorFilter(state == 5 ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
-        run.setVisibility(state == 0 ? View.GONE : View.VISIBLE);
+        run.setVisibility(state == 0 || !showRun ? View.GONE : View.VISIBLE);
         run.setEnabled(!blocked && !paused && (canInteract || state == 9));
-        run.setContentDescription(state == 9 ? "Cancel run" : "Run");
+        run.setContentDescription(state == 9 ? "Cancel auto-move" : "Auto-move");
         run.setAlpha(opacityPreview || canInteract || state == 9 ? 1f : .35f);
         run.setColorFilter(state == 9 ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
         cancel.setVisibility(aiming() && state != 5 && state != 9 && !paused ? View.VISIBLE : View.GONE);
