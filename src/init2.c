@@ -1526,21 +1526,20 @@ extern void display_introduction(void)
     Term_putstr(14, 4, -1, TERM_L_BLUE,
         "     No stain yet on the moon was seen...              ");
 
-    Term_putstr(14, 7, -1, TERM_WHITE,
-        "Welcome to Sil, a game of adventure set                ");
-    Term_putstr(14, 8, -1, TERM_WHITE,
-        "  in the First Age of Middle-earth,                    ");
-    Term_putstr(14, 9, -1, TERM_WHITE,
-        "    when the world still rang with elven song          ");
-    Term_putstr(14, 10, -1, TERM_WHITE,
-        "      and gleamed with dwarven mail.                   ");
-
-    Term_putstr(14, 11, -1, TERM_WHITE,
-        "Walk the dark halls of Angband.                        ");
-    Term_putstr(14, 12, -1, TERM_WHITE,
-        "  Slay creatures black and fell.                       ");
-    Term_putstr(14, 13, -1, TERM_WHITE,
-        "    Wrest a shining Silmaril from Morgoth's iron crown.");
+    Term_putstr(16, 7, -1, TERM_WHITE,
+        " .oooooo..o  o8o  oooo            .oooooo.");
+    Term_putstr(16, 8, -1, TERM_WHITE,
+        "d8P'    `Y8  `\"'  `888           d8P'  `Y8b");
+    Term_putstr(16, 9, -1, TERM_WHITE,
+        "Y88bo.      oooo   888          888      888");
+    Term_putstr(16, 10, -1, TERM_WHITE,
+        " `\"Y8888o.  `888   888          888      888");
+    Term_putstr(16, 11, -1, TERM_WHITE,
+        "     `\"Y88b  888   888  8888888 888      888");
+    Term_putstr(16, 12, -1, TERM_WHITE,
+        "oo     .d8P  888   888          `88b    d88b");
+    Term_putstr(16, 13, -1, TERM_WHITE,
+        "8\"\"88888P'  o888o o888o          `Y8bood8P'Ybd'");
 
     /* Flush it */
     Term_fresh();

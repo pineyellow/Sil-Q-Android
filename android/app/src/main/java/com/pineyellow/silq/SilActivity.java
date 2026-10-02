@@ -115,8 +115,6 @@ public class SilActivity extends SDLActivity {
         dpadHost.addView(dpadView, new FrameLayout.LayoutParams(
             dpToPx(DPadOverlay.SIZE_DP), dpToPx(DPadOverlay.SIZE_DP),
             Gravity.TOP | Gravity.LEFT));
-        // Menu always stays reachable, including when the D-pad overlaps it.
-        gameOverlay.addView(menuOverlay.getView(), new FrameLayout.LayoutParams(-1, -1));
         characterClose = new android.widget.TextView(this);
         characterClose.setText("[x]");
         characterClose.setTextSize(20);
@@ -139,6 +137,9 @@ public class SilActivity extends SDLActivity {
         inventoryButton.setMargins(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8));
         gameOverlay.addView(inventoryOverlay.button(), inventoryButton);
         fireControls = new FireControls(this, gameOverlay);
+        // Added last: the menu stays reachable over the D-pad, and an open
+        // submenu draws over the action buttons and takes their taps.
+        gameOverlay.addView(menuOverlay.getView(), new FrameLayout.LayoutParams(-1, -1));
         applyButtonOpacity();
         addContentView(inventoryHost, new FrameLayout.LayoutParams(-1, -1));
         dpadHost.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
