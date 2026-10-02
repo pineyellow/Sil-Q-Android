@@ -501,7 +501,9 @@ final class InventoryOverlay {
         boolean equipped = !item.optString("slot").isEmpty();
         GradientDrawable rowBackground = background(equipped ? Palette.EQUIPPED_BG : Palette.ITEM_BG);
         if (equipped) rowBackground.setStroke(dp(1), Palette.EQUIPPED_BORDER);
-        row.setBackground(new RippleDrawable(ColorStateList.valueOf(Palette.RIPPLE_GLOW), rowBackground, null));
+        // A clickable panel passes its pressed state down to a static row.
+        row.setBackground(click == null ? rowBackground
+            : new RippleDrawable(ColorStateList.valueOf(Palette.RIPPLE_GLOW), rowBackground, null));
         ImageView icon = new ImageView(activity);
         JSONArray pixels = item.optJSONArray("pixels");
         if (pixels != null && pixels.length() == 256) {
