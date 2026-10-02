@@ -3043,6 +3043,13 @@ void play_game(bool new_game)
         ////	quit("broken savefile");
     }
 
+#if defined(__ANDROID__) && defined(USE_SDL)
+    /* New and resumed characters share one monster memory; the tutorial's
+     * bundled memory is left alone. */
+    if (p_ptr->game_type == 0)
+        android_lore_load();
+#endif
+
     /* Nothing loaded (and living) */
     if (!character_loaded)
     {

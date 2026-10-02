@@ -151,6 +151,83 @@ void android_save_new_name(void)
     my_strcpy(savefile, path, sizeof(savefile));
 }
 
+/* Monster memory shared by every character. Saves still carry a full copy for
+ * the PC format, but only their per-life counts are used once this exists. */
+typedef struct { uint32_t magic, version, races, record; } lore_header;
+typedef struct {
+    int16_t deaths, tsights, tkills;
+    uint8_t notice, ignore, drop_item, ranged, blows[MONSTER_BLOW_MAX];
+    uint32_t flags[4];
+} lore_record;
+
+#define LORE_MAGIC 0x53494c4cu
+
+static void lore_path(char* out, size_t n, cptr extension)
+{
+    strnfmt(out, n, "%s/monster-memory%s", ANGBAND_DIR_SAVE, extension);
+}
+
+void android_lore_load(void)
+{
+    char path[1024];
+    lore_header h;
+    lore_record* records = NULL;
+    lore_path(path, sizeof(path), "");
+    FILE* f = fopen(path, "rb");
+    /* Without a usable file the loaded character's own copy seeds the next one. */
+    if (!f) return;
+    bool ok = fread(&h, sizeof(h), 1, f) == 1 && h.magic == LORE_MAGIC
+        && h.version == 1 && h.races == z_info->r_max
+        && h.record == sizeof(*records);
+    if (ok) records = malloc(h.races * sizeof(*records));
+    ok = records && fread(records, sizeof(*records), h.races, f) == h.races
+        && fgetc(f) == EOF;
+    fclose(f);
+    for (int i = 0; ok && i < z_info->r_max; i++) {
+        monster_lore* l = &l_list[i];
+        const lore_record* r = &records[i];
+        l->deaths = r->deaths;
+        /* Totals always include this life. */
+        l->tsights = MAX(r->tsights, l->psights);
+        l->tkills = MAX(r->tkills, l->pkills);
+        l->notice = r->notice; l->ignore = r->ignore;
+        l->drop_item = r->drop_item; l->ranged = r->ranged;
+        memcpy(l->blows, r->blows, sizeof(l->blows));
+        l->flags1 = r->flags[0]; l->flags2 = r->flags[1];
+        l->flags3 = r->flags[2]; l->flags4 = r->flags[3];
+    }
+    free(records);
+}
+
+void android_lore_save(void)
+{
+    char path[1024], staged[1024];
+    if (p_ptr->game_type != 0) return; /* The tutorial teaches nothing lasting. */
+    lore_header h = { LORE_MAGIC, 1, z_info->r_max, sizeof(lore_record) };
+    lore_path(path, sizeof(path), "");
+    lore_path(staged, sizeof(staged), ".new");
+    FILE* f = fopen(staged, "wb");
+    if (!f) return;
+    bool ok = fwrite(&h, sizeof(h), 1, f) == 1;
+    for (int i = 0; ok && i < z_info->r_max; i++) {
+        const monster_lore* l = &l_list[i];
+        lore_record r;
+        memset(&r, 0, sizeof(r));
+        r.deaths = l->deaths; r.tsights = l->tsights; r.tkills = l->tkills;
+        r.notice = l->notice; r.ignore = l->ignore;
+        r.drop_item = l->drop_item; r.ranged = l->ranged;
+        memcpy(r.blows, l->blows, sizeof(r.blows));
+        r.flags[0] = l->flags1; r.flags[1] = l->flags2;
+        r.flags[2] = l->flags3; r.flags[3] = l->flags4;
+        ok = fwrite(&r, sizeof(r), 1, f) == 1;
+    }
+    ok = ok && fflush(f) == 0 && fsync(fileno(f)) == 0;
+    if (fclose(f) != 0) ok = FALSE;
+    /* The previous memory stays in place unless the new one is complete. */
+    if (ok && rename(staged, path) == 0) sync_directory();
+    else unlink(staged);
+}
+
 bool android_save_commit(cptr temporary)
 {
     char path[1024], manifest[1024], staged[1024], backup[1024];
@@ -183,6 +260,7 @@ bool android_save_commit(cptr temporary)
     }
     if (!write_summary(staged, &next) || rename(staged, manifest) != 0
         || !sync_directory()) return FALSE;
+    android_lore_save();
     last_turn = playerturn; last_depth = p_ptr->depth;
     return TRUE;
 }
@@ -209,6 +287,7 @@ static bool retire(void)
 
 bool android_save_delete(void)
 {
+    android_lore_save();
     /* Publish a tombstone first so interrupted deletion cannot resurrect a run. */
     if (!retire()) return FALSE;
     disabled = TRUE;
@@ -229,6 +308,7 @@ bool android_save_delete(void)
 bool android_save_mark_dead(void)
 {
     if (android_save_managed() && !disabled) {
+        android_lore_save();
         if (retire()) disabled = TRUE;
         else { plog("Could not retire the dead character's save."); return FALSE; }
     }

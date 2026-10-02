@@ -17,4 +17,6 @@ extern void android_save_poll(void);
 extern bool android_save_suspended(void);
 extern void android_save_serviced(bool success);
 extern void android_save_cancel_requests(void);
+extern void android_lore_load(void);
+extern void android_lore_save(void);
 #endif

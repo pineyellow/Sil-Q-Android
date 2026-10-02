@@ -1449,7 +1449,12 @@ bool save_player(void)
     if (!savefile[0]) return FALSE;
     if (android_save_managed())
     {
-        if (p_ptr->is_dead) return android_save_mark_dead();
+        if (p_ptr->is_dead)
+        {
+            /* The save may have been retired before the killer was recorded. */
+            android_lore_save();
+            return android_save_mark_dead();
+        }
         strnfmt(safe, sizeof(safe), "%s.new", savefile);
         fd_kill(safe);
         bool ok = save_player_aux(safe) && android_save_commit(safe);
