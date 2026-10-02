@@ -312,6 +312,21 @@ Java_com_pineyellow_silq_SilActivity_nativeOpenAbilities(JNIEnv* env, jobject se
     SDL_PushEvent(&event);
 }
 
+JNIEXPORT void JNICALL
+Java_com_pineyellow_silq_SilActivity_nativeOpenSmithing(JNIEnv* env, jobject self)
+{
+    (void)env; (void)self;
+    int type = SDL_AtomicGet(&dpad_event_type);
+    if (!type) return;
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = (Uint32)type;
+    /* Not '0': the Angband keyset reads that as the repeat-count prefix. */
+    event.user.code = KTRL('D');
+    event.user.windowID = (Uint32)SDL_AtomicGet(&dpad_context);
+    SDL_PushEvent(&event);
+}
+
 static void update_dpad_availability(void)
 {
     static int last_more = -1;
@@ -1001,10 +1016,12 @@ static void handle_event(const SDL_Event* event, bool discard_input)
     if (event->type == (Uint32)SDL_AtomicGet(&dpad_event_type)) {
         if (event->user.code == 0) return;
         if (event->user.code == '@' || event->user.code == '\t' || event->user.code == ESCAPE
+            || event->user.code == KTRL('D')
             || event->user.code == KTRL(']') || event->user.code == KTRL('X')) {
             if (discard_input || blocked || background || more_active
                 || screen_term.key_head != screen_term.key_tail) return;
-            if ((event->user.code == '@' || event->user.code == '\t' || event->user.code == KTRL(']') || event->user.code == KTRL('X'))
+            if ((event->user.code == '@' || event->user.code == '\t' || event->user.code == KTRL('D')
+                    || event->user.code == KTRL(']') || event->user.code == KTRL('X'))
                 && dungeon_input() && inkey_flag
                 && !inkey_scan && !inventory_active && !firing_active
                 && event->user.windowID == (Uint32)SDL_AtomicGet(&dpad_context)) {

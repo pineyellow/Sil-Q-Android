@@ -16,17 +16,19 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 /** Hamburger control and submenu for Sil-Q actions. */
 final class MenuOverlay {
     private final SilActivity activity;
     private final FrameLayout layer;
-    private final LinearLayout submenu;
+    private final ScrollView submenu;
     private final View menuBtn;
     private final View backdrop;
     private final View characterItem;
     private final View abilitiesItem;
+    private final View smithingItem;
     private final View saveQuitItem;
     private boolean expanded;
     private boolean opacityPreview;
@@ -49,27 +51,39 @@ final class MenuOverlay {
         backdrop.setVisibility(View.GONE);
         layer.addView(backdrop, new FrameLayout.LayoutParams(-1, -1));
 
-        submenu = new LinearLayout(activity);
-        submenu.setOrientation(LinearLayout.VERTICAL);
+        // Scrolls only when a short display or large font cannot fit every row.
+        submenu = new ScrollView(activity);
+        submenu.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        submenu.setScrollbarFadingEnabled(false);
         submenu.setBackground(makeSubmenuBackground());
         submenu.setPadding(dp(3), dp(4), dp(3), dp(3));
         submenu.setVisibility(View.GONE);
         submenu.setElevation(dp(8));
+        LinearLayout items = new LinearLayout(activity);
+        items.setOrientation(LinearLayout.VERTICAL);
+        submenu.addView(items, new ScrollView.LayoutParams(-1, -2));
         characterItem = makeSubmenuItem("Character", v -> {
             collapseSubmenu();
             activity.openCharacterSheet();
         });
         characterItem.setEnabled(false);
         characterItem.setAlpha(0.4f);
-        submenu.addView(characterItem, submenuItemParams());
+        items.addView(characterItem, submenuItemParams());
         abilitiesItem = makeSubmenuItem("Abilities", v -> {
             collapseSubmenu();
             activity.openAbilities();
         });
         abilitiesItem.setEnabled(false);
         abilitiesItem.setAlpha(0.4f);
-        submenu.addView(abilitiesItem, submenuItemParams());
-        submenu.addView(makeSubmenuItem("Settings", v -> {
+        items.addView(abilitiesItem, submenuItemParams());
+        smithingItem = makeSubmenuItem("Smithing", v -> {
+            collapseSubmenu();
+            activity.openSmithing();
+        });
+        smithingItem.setEnabled(false);
+        smithingItem.setAlpha(0.4f);
+        items.addView(smithingItem, submenuItemParams());
+        items.addView(makeSubmenuItem("Settings", v -> {
             collapseSubmenu();
             onSettings.run();
         }), submenuItemParams());
@@ -78,15 +92,15 @@ final class MenuOverlay {
         abandonDivider.setAlpha(0.5f);
         LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(-1, dp(1));
         dividerParams.setMargins(dp(6), dp(2), dp(6), dp(2));
-        submenu.addView(abandonDivider, dividerParams);
+        items.addView(abandonDivider, dividerParams);
         saveQuitItem = makeSubmenuItem("Save and Quit", v -> {
             collapseSubmenu();
             activity.nativeSaveAndQuit();
         });
         saveQuitItem.setEnabled(false);
         saveQuitItem.setAlpha(0.4f);
-        submenu.addView(saveQuitItem, submenuItemParams());
-        submenu.addView(makeSubmenuItem("Abandon Game", v -> {
+        items.addView(saveQuitItem, submenuItemParams());
+        items.addView(makeSubmenuItem("Abandon Game", v -> {
             collapseSubmenu();
             activity.nativeAbandonGame();
         }), submenuItemParams());
@@ -107,7 +121,7 @@ final class MenuOverlay {
         topGroup.addView(submenu, subParams);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
             -2, -2, Gravity.TOP | Gravity.END);
-        params.setMargins(0, dp(8), dp(8), 0);
+        params.setMargins(0, dp(8), dp(8), dp(8));
         layer.addView(topGroup, params);
     }
 
@@ -120,6 +134,8 @@ final class MenuOverlay {
         characterItem.setAlpha(available ? 1f : 0.4f);
         abilitiesItem.setEnabled(available);
         abilitiesItem.setAlpha(available ? 1f : 0.4f);
+        smithingItem.setEnabled(available);
+        smithingItem.setAlpha(available ? 1f : 0.4f);
         updateVisibility();
     }
     void setCharacterScreenOpen(boolean open) {
@@ -171,6 +187,7 @@ final class MenuOverlay {
         submenu.animate().cancel();
         submenu.setAlpha(0f);
         submenu.setTranslationY(dp(-8));
+        submenu.scrollTo(0, 0);
         submenu.setVisibility(View.VISIBLE);
         submenu.animate().alpha(1f).translationY(0).setDuration(150)
             .setInterpolator(new DecelerateInterpolator()).start();

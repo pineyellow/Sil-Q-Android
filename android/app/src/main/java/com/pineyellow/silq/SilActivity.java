@@ -270,6 +270,11 @@ public class SilActivity extends SDLActivity {
         nativeOpenAbilities();
     }
     native void nativeOpenAbilities();
+    void openSmithing() {
+        prepareFireInput();
+        nativeOpenSmithing();
+    }
+    native void nativeOpenSmithing();
     native void nativeAbandonGame();
     native void nativeSaveAndQuit();
     native void nativeSaveLifecycle(int reason, boolean inactive);
