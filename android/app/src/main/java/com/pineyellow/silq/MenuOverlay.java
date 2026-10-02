@@ -83,16 +83,16 @@ final class MenuOverlay {
         smithingItem.setEnabled(false);
         smithingItem.setAlpha(0.4f);
         items.addView(smithingItem, submenuItemParams());
+        View divider = new View(activity);
+        divider.setBackgroundColor(Palette.BORDER_DIM);
+        divider.setAlpha(0.5f);
+        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(-1, dp(1));
+        dividerParams.setMargins(dp(6), dp(2), dp(6), dp(2));
+        items.addView(divider, dividerParams);
         items.addView(makeSubmenuItem("Settings", v -> {
             collapseSubmenu();
             onSettings.run();
         }), submenuItemParams());
-        View abandonDivider = new View(activity);
-        abandonDivider.setBackgroundColor(Palette.BORDER_DIM);
-        abandonDivider.setAlpha(0.5f);
-        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(-1, dp(1));
-        dividerParams.setMargins(dp(6), dp(2), dp(6), dp(2));
-        items.addView(abandonDivider, dividerParams);
         saveQuitItem = makeSubmenuItem("Save and Quit", v -> {
             collapseSubmenu();
             activity.nativeSaveAndQuit();
