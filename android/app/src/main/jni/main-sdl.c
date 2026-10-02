@@ -185,8 +185,10 @@ static bool throwing_active;
 static bool horn_active;
 static bool horn_vertical;
 static bool interacting_active;
+/* Run reuses the interaction direction prompt; this only labels its state. */
+static bool run_direction_active;
 static int firing_range;
-static SDL_atomic_t fire_epoch, fire_request;
+static SDL_atomic_t fire_epoch, fire_request, run_request;
 static int last_fire_state = -1;
 static int last_stealth_state = -1;
 static int last_singing_state = -1;
@@ -617,7 +619,8 @@ static void update_fire_controls(void)
         state = 1;
         if (!background && !SDL_AtomicGet(&overlay_input_blocked)
             && (!inventory_active || firing_active) && !more_active) {
-            if (firing_active) state = interacting_active ? 5 : horn_active ? 7 : throwing_active ? 4 : 3;
+            if (firing_active) state = run_direction_active ? 9 : interacting_active ? 5
+                : horn_active ? 7 : throwing_active ? 4 : 3;
             else if (fletching) state = 8;
             else if (inkey_flag && !inkey_scan)
                 state = inventory[INVEN_BOW].k_idx ? 2 : 6;
@@ -702,6 +705,17 @@ Java_com_pineyellow_silq_SilActivity_nativeSingInput(
     wake_renderer();
 }
 
+/* The eight fire_request action codes are taken; Run has its own request. */
+JNIEXPORT void JNICALL
+Java_com_pineyellow_silq_SilActivity_nativeRunInput(
+    JNIEnv* env, jobject self, jint epoch)
+{
+    (void)env; (void)self;
+    if (epoch == SDL_AtomicGet(&fire_epoch))
+        SDL_AtomicSet(&run_request, epoch);
+    wake_renderer();
+}
+
 JNIEXPORT void JNICALL
 Java_com_pineyellow_silq_SilActivity_nativeQuiverInput(
     JNIEnv* env, jobject self, jint epoch)
@@ -754,6 +768,16 @@ bool android_interact_direction(int* direction)
     bool selected = get_rep_dir(direction);
     android_fire_aim(FALSE, 1);
     interacting_active = FALSE;
+    return selected;
+}
+
+bool android_run_direction(int* direction)
+{
+    run_direction_active = interacting_active = TRUE;
+    android_fire_aim(TRUE, 1);
+    bool selected = get_rep_dir(direction);
+    android_fire_aim(FALSE, 1);
+    run_direction_active = interacting_active = FALSE;
     return selected;
 }
 
@@ -1266,6 +1290,14 @@ static void pump_events(bool wait, bool discard_input)
                 Term_keypress(selected_quiver == 2 ? 'F' : 'f');
             }
         }
+    }
+    int run = SDL_AtomicSet(&run_request, 0);
+    if (run && run == SDL_AtomicGet(&fire_epoch)
+        && !discard_input && !background && !SDL_AtomicGet(&overlay_input_blocked)
+        && !more_active && dungeon_input() && !firing_active && !inventory_active
+        && !p_ptr->fletching && inkey_flag && !inkey_scan
+        && screen_term.key_head == screen_term.key_tail) {
+        Term_keypress('.');
     }
     if (SDL_AtomicSet(&inventory_open_requested, 0) && !discard_input
         && !SDL_AtomicGet(&overlay_input_blocked) && !background

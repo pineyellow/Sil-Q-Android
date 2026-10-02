@@ -317,6 +317,7 @@ public class SilActivity extends SDLActivity {
     native void nativeInteractInput(int epoch);
     native void nativeStealthInput(int epoch);
     native void nativeSingInput(int epoch);
+    native void nativeRunInput(int epoch);
     native void nativeQuiverInput(int epoch);
     native void nativeHornDirectionInput(int epoch, boolean down);
 

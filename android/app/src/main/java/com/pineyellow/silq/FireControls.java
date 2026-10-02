@@ -15,7 +15,7 @@ import android.graphics.Typeface;
 /** Shared aim/cancel controls; the game thread owns firing and throwing. */
 final class FireControls {
     private final SilActivity activity;
-    private final ImageButton fire, cancel, interact, stealth, sing, hornUp, hornDown, ground;
+    private final ImageButton fire, cancel, interact, stealth, sing, run, hornUp, hornDown, ground;
     private boolean hasGroundItem;
     private int groundEpoch;
     private final LinearLayout quiver;
@@ -45,7 +45,13 @@ final class FireControls {
             activity.prepareFireInput();
             activity.nativeSingInput(epoch);
         });
-        cancel = button(host, R.drawable.ic_close, "Cancel shot", 8, 64);
+        run = button(host, R.drawable.ic_run, "Run", 288, 8);
+        run.setOnClickListener(v -> {
+            activity.prepareFireInput();
+            if (state == 9) cancel();
+            else activity.nativeRunInput(epoch);
+        });
+        cancel =button(host, R.drawable.ic_close, "Cancel shot", 8, 64);
         ground = button(host, R.drawable.ic_close, "Item on ground", 8, 64);
         GradientDrawable groundBackground = new GradientDrawable();
         groundBackground.setColor(Palette.TOGGLE_ACTIVE);
@@ -139,7 +145,7 @@ final class FireControls {
     }
 
     void applyButtonOpacity(float opacity) {
-        for (View button : new View[]{fire, cancel, interact, stealth, sing,
+        for (View button : new View[]{fire, cancel, interact, stealth, sing, run,
                 hornUp, hornDown, quiver}) {
             ButtonOpacity.apply(button, Palette.ACTION_BUTTON_BG, opacity);
         }
@@ -187,7 +193,9 @@ final class FireControls {
         render();
     }
 
-    boolean aiming() { return state == 3 || state == 4 || state == 5 || state == 7; }
+    boolean aiming() {
+        return state == 3 || state == 4 || state == 5 || state == 7 || state == 9;
+    }
     void cancel() { if (aiming()) activity.nativeFireInput(epoch, true); }
     void block(boolean blocked) { this.blocked = blocked; render(); }
     void pause() { paused = true; cancel(); render(); }
@@ -204,6 +212,8 @@ final class FireControls {
 
     private void render() {
         positionRight(sing, hasBow ? 232 : 176);
+        // Furthest left: after whichever of Fire and Sing are present.
+        positionRight(run, 176 + (hasBow ? 56 : 0) + (hasSongs ? 56 : 0));
         positionRight(cancel, state == 3 ? 176 : 8);
         ground.setVisibility(hasGroundItem && !blocked && !paused && !aiming()
             && (state == 2 || state == 6) ? View.VISIBLE : View.GONE);
@@ -236,7 +246,12 @@ final class FireControls {
         stealth.setContentDescription(stealthActive ? "Disable stealth (on)" : "Enable stealth (off)");
         interact.setAlpha(opacityPreview || canInteract || state == 5 ? 1f : .35f);
         interact.setColorFilter(state == 5 ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
-        cancel.setVisibility(aiming() && state != 5 && !paused ? View.VISIBLE : View.GONE);
+        run.setVisibility(state == 0 ? View.GONE : View.VISIBLE);
+        run.setEnabled(!blocked && !paused && (canInteract || state == 9));
+        run.setContentDescription(state == 9 ? "Cancel run" : "Run");
+        run.setAlpha(opacityPreview || canInteract || state == 9 ? 1f : .35f);
+        run.setColorFilter(state == 9 ? Palette.ACTION_BUTTON_TEXT_ACTIVE : Palette.ACTION_BUTTON_TEXT);
+        cancel.setVisibility(aiming() && state != 5 && state != 9 && !paused ? View.VISIBLE : View.GONE);
         cancel.setEnabled(!blocked && !paused);
         quiverNumber.setText(selectedQuiver == 2 ? "2" : "1");
         quiver.setContentDescription("Quiver " + selectedQuiver + "; switch quiver");

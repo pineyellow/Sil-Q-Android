@@ -4944,7 +4944,11 @@ bool get_aim_dir(int* dp, int range)
         /* Choose a prompt */
 #if defined(__ANDROID__) && defined(USE_SDL)
         if (p_ptr->command_cmd == 'f' || p_ptr->command_cmd == 'F')
-            p = "Direction? (Tap a target, use D-pad, or tap Bow again to quick-fire)";
+            p = "Fire where? (Tap Bow again to quick-fire)";
+        else if (p_ptr->command_cmd == 't')
+            p = "Throw where? (Tap X to cancel)";
+        else if (p_ptr->command_cmd == 'p')
+            p = "Aim where? (Tap X to cancel)";
         else
             p = "Direction? (Tap a target or use D-pad)";
 #else
@@ -5103,7 +5107,9 @@ bool get_rep_dir(int* dp)
         /* Choose a prompt */
 #if defined(__ANDROID__) && defined(USE_SDL)
         if (p_ptr->command_cmd == '/')
-            p = "Direction? (Tap a tile or use D-pad; tap Interact again to cancel)";
+            p = "Interact where? (Tap Interact again to cancel)";
+        else if (p_ptr->command_cmd == '.')
+            p = "Run where? (Tap Run again to cancel)";
         else
             p = "Direction (Escape to cancel)? ";
 #else

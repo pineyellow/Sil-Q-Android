@@ -3355,8 +3355,14 @@ void do_cmd_run(void)
     }
 
     /* Get a direction (or abort) */
+#if defined(__ANDROID__) && defined(USE_SDL)
+    extern bool android_run_direction(int* direction);
+    if (!android_run_direction(&dir))
+        return;
+#else
     if (!get_rep_dir(&dir))
         return;
+#endif
 
     // convert into rest
     if (dir == 5)
