@@ -454,6 +454,15 @@ static void log_message(cptr message)
     __android_log_write(ANDROID_LOG_ERROR, "SilQ", message ? message : "Quit");
 }
 
+/* quit() ends the process here. exit() would destroy global C++ objects in
+ * system libraries (hwui, gralloc) while Android's RenderThread may still be
+ * drawing our views. Saves are already fsync'd; flush any stdio output. */
+void android_process_exit(int code)
+{
+    fflush(NULL);
+    _exit(code);
+}
+
 static void load_font(void)
 {
     SDL_Surface* bitmap = SDL_LoadBMP("font.bmp");

@@ -201,6 +201,14 @@ void plog(cptr str)
  */
 void (*quit_aux)(cptr) = NULL;
 
+#if defined(__ANDROID__) && defined(USE_SDL)
+/* Android must never run exit(): see android_process_exit() in main-sdl.c. */
+extern void android_process_exit(int code);
+#define QUIT_EXIT(code) android_process_exit(code)
+#else
+#define QUIT_EXIT(code) exit(code)
+#endif
+
 /*
  * Exit (ala "exit()").  If 'str' is NULL, do "exit(0)".
  * If 'str' begins with "+" or "-", do "exit(atoi(str))".
@@ -215,17 +223,17 @@ void quit(cptr str)
 
     /* Success */
     if (!str)
-        exit(0);
+        QUIT_EXIT(0);
 
     /* Extract a "special error code" */
     if ((str[0] == '-') || (str[0] == '+'))
-        exit(atoi(str));
+        QUIT_EXIT(atoi(str));
 
     /* Send the string to plog() */
     plog(str);
 
     /* Failure */
-    exit(EXIT_FAILURE);
+    QUIT_EXIT(EXIT_FAILURE);
 }
 
 /*
