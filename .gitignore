@@ -20,7 +20,6 @@ src/sil.o.x86_64
 /android/.gradle/
 /android/build/
 /android/local.properties
-/android/vendor/
 /android/app/build/
 /android/app/.cxx/
 /android/.idea/

@@ -16,16 +16,23 @@ Native targets: `arm64-v8a`, `armeabi-v7a`, and `x86_64`.
 
 ## SDL2 dependency
 
-The build requires SDL 2.30.12 at revision
-`8236e01a9f758d15927624925c6043f84d8a261f`. From the repository root:
+The build requires SDL 2.30.12 (tag `release-2.30.12`, revision
+`8236e01a9f758d15927624925c6043f84d8a261f`). It is included as a git
+submodule at `android/vendor/SDL2`, pinned to that revision. Clone with
+submodules:
 
 ```sh
-git clone https://github.com/libsdl-org/SDL.git android/vendor/SDL2
-git -C android/vendor/SDL2 checkout --detach 8236e01a9f758d15927624925c6043f84d8a261f
+git clone --recursive https://github.com/pineyellow/Sil-Q-Android.git
+```
+
+Or, in an existing clone, from the repository root:
+
+```sh
+git submodule update --init
 ```
 
 CMake compiles SDL directly; Gradle includes its Android Java sources and
-license. `android/vendor` is untracked and must be populated before syncing.
+license. The submodule must be populated before syncing.
 
 ## Project configuration
 
