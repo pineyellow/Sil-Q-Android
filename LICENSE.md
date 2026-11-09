@@ -1,3 +1,9 @@
+Sil-Q Android: the changes and additions made for this Android port are
+by pineyellow (2026) and are released under the same terms as Sil,
+shown below.
+
+______________________________________________________________________
+
 Sil is free software; you can redistribute it and/or modify it under the
 terms of either the GNU General Public License as published by the Free
 Software Foundation, version 2, or the "Angband licence", shown below, with

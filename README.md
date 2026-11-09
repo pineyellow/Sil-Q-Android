@@ -14,8 +14,13 @@ See [BUILD.md](BUILD.md) for requirements and build instructions.
 
 ## License
 
-The source retains the original copyright and license notices. See [LICENSE.md](LICENSE.md) for the original game's licensing terms and
-exceptions. Third-party components retain their own licenses.
+The source retains the original copyright and license notices. See [LICENSE.md](LICENSE.md) for the licensing terms and
+exceptions, which also cover this port. Third-party components retain their own licenses.
+
+Third-party components bundled in the app:
+
+- [SDL2](https://www.libsdl.org/) (`android/vendor/SDL2`): zlib license
+- Material Icons (`android/licenses`): Apache License 2.0
 
 When distributing an APK or another binary build, make the corresponding
 source for that exact build available under the applicable licenses.
